@@ -19,14 +19,25 @@ public class User {
 
     private String mail;
 
+    private String role;
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
     @JsonIgnore
     private String password;
 
-    public User(String username, String fullname, String mail, String password) {
+    public User(String username, String fullname, String mail, String password, String role) {
         this.username = username;
         this.fullname = fullname;
         this.mail = mail;
         this.password = password;
+        this.role = role;
     }
 
     public User() {
@@ -73,6 +84,7 @@ public class User {
 
     @Override
     public String toString() {
-        return String.format("id=%d, username=%s, fullname=%s, mail=%s, password=%s", id, username, fullname, mail, password);
+        return String.format("id=%d, username=%s, fullname=%s, mail=%s, password=%s, role=%s",
+                id, username, fullname, mail, password, role);
     }
 }
