@@ -1,9 +1,6 @@
 package gomel.iba.by;
 
-import gomel.iba.by.exceptions.IncorrectEmailException;
-import gomel.iba.by.exceptions.UserAlreadyExistsException;
-import gomel.iba.by.exceptions.UserNotFoundException;
-import gomel.iba.by.exceptions.ValidationException;
+import gomel.iba.by.exceptions.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -30,5 +27,10 @@ public class UserExceptionController {
     @ExceptionHandler(IncorrectEmailException.class)
     public ResponseEntity<Object> exception(IncorrectEmailException e) {
         return new ResponseEntity<>("Incorrect email", HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(IncorrectRoleException.class)
+    public ResponseEntity<Object> exception(IncorrectRoleException e) {
+        return new ResponseEntity<>("Incorrect role, there are only 'ADMIN' and 'USER' roles", HttpStatus.BAD_REQUEST);
     }
 }

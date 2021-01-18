@@ -1,9 +1,6 @@
 package gomel.iba.by;
 
-import gomel.iba.by.exceptions.IncorrectEmailException;
-import gomel.iba.by.exceptions.UserAlreadyExistsException;
-import gomel.iba.by.exceptions.UserNotFoundException;
-import gomel.iba.by.exceptions.ValidationException;
+import gomel.iba.by.exceptions.*;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
@@ -12,10 +9,11 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 
 @RestController
 public class UsersController {
@@ -29,7 +27,6 @@ public class UsersController {
     public List<User> showUsers(Authentication auth) {
         UserDetails userDetails = (UserDetails) auth.getPrincipal();
         User user = userRepository.findFirstByUsername(userDetails.getUsername()).orElse(null);
-        log.info(Role.ADMIN.toString());
         List<User> users;
         if (user.getRole().equals(Role.ADMIN.name())) {
             users = userRepository.findAll();
@@ -40,18 +37,21 @@ public class UsersController {
     }
 
     @PostMapping("/add")
-    @PreAuthorize("hasAuthority('permission:write')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public User addUser(@RequestBody User user) {
         log.info(user);
+        String role = user.getRole();
         if (userRepository.findFirstByUsername(user.getUsername()).isPresent()) {
             log.info("This user already exists");
             throw new UserAlreadyExistsException();
         }
-        if (user.getFullname() == null || user.getMail() == null || user.getPassword() == null || user.getUsername() == null
-            || user.getRole() == null || user.getFullname().equals("") || user.getMail().equals("")
-                || user.getPassword().equals("") || user.getUsername().equals("")) {
+        if (user.getFullname() == null || user.getMail() == null || user.getPassword() == null ||
+                user.getUsername() == null || role == null) {
             log.info("Validation error");
             throw new ValidationException();
+        }
+        if (Arrays.stream(Role.values()).map(Role::name).noneMatch(role::equals)) {
+            throw new IncorrectRoleException();
         }
         if (!checkEmail(user.getMail())) {
             throw new IncorrectEmailException();
@@ -65,7 +65,7 @@ public class UsersController {
     }
 
     @DeleteMapping("/delete/{id}")
-    @PreAuthorize("hasAuthority('permission:write')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<Object> deleteUser(@PathVariable Long id) {
         if (userRepository.findById(id).isPresent()) {
             userRepository.deleteById(id);
